@@ -2,6 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 
 
 //app
@@ -9,14 +10,18 @@ const app = express();
 
 
 //settings
+
+app.use(bodyParser.json({limit: '50mb', extended: true}));
+app.use(bodyParser.urlencoded({limit: "50mb", extended: true, parameterLimit:100000}));
+app.use(bodyParser.text({ limit: '200mb' }));
+
+
 require('dotenv').config();
 
 app.use(cors());
 
 app.use(express.json());
 
-const path = require('path');
-app.use("/uploads",express.static(path.join(__dirname,"uploads")));
 
 
 //connect server to mongodb and start the server

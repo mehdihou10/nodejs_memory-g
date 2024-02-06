@@ -19,15 +19,6 @@ const addPost = asyncWrapper(async (req,res)=>{
 
     const post = new Post(req.body);
 
-    if(req.file){
-
-        post.image = req.file.filename;
-
-    } else{
-
-        post.image = null;
-    }
-
     await post.save();
 
     res.status(201).json(post)
@@ -38,13 +29,6 @@ const updatePost = asyncWrapper(async (req,res)=>{
     const {postId} = req.params;
 
     await Post.findByIdAndUpdate(postId,{$set: {...req.body}});
-
-    if(req.file){
-
-        console.log(req.file)
-
-        await Post.findByIdAndUpdate(postId,{$set: {image: req.file.filename}})
-    }
 
     res.json({status: SUCCESS});
 })
