@@ -34,7 +34,10 @@ mongoose.connect(process.env.MONGO_URL)
 app.get('/',(req,res)=>res.send('<h1>Welcome to Mehdi Empire</h1>'))
 
 const postsRouter = require('./routes/posts.routes');
+const usersRouter = require('./routes/users.routes');
+
 app.use('/api/posts',postsRouter);
+app.use('/api/users',usersRouter);
 
 
 //error handler
@@ -42,5 +45,12 @@ const {ERROR} = require('./utils/http.status');
 
 app.use((err,req,res,next)=>{
 
-    res.json({status: ERROR || err.status, code: 500 || err.code, message: err.message})
+    res.json({status: err.status || ERROR, code: err.code || 500, message: err.message})
+})
+
+
+//404 page
+app.use('*',(req,res)=>{
+
+    res.status(404).json({message: "404 route not found"})
 })
