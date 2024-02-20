@@ -7,14 +7,19 @@ const postSchema = mongoose.Schema({
     creator: String,
     tags: String,
     image: String,
+    category: String,
+    comments:{
+        type: [Object],
+        default: []
+    },
     likeCount: {
-        type: Number,
-        default: 0
+        type: [String],
+        default: []
     },
     createdAt: {
         type: Date,
         default: new Date()
-    }
+    },
 })
 
 
