@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
 
 
 const userSchema = mongoose.Schema({
@@ -8,10 +7,7 @@ const userSchema = mongoose.Schema({
     lastName: String,
     userName: String,
 
-    email: {
-        type: String,
-        validate: [validator.isEmail,"feild must me an email"]
-    },
+    email: String,
 
     password: String,
 
@@ -19,7 +15,20 @@ const userSchema = mongoose.Schema({
 
         type: String,
         default: "images/user.png"
-    }
+    },
+
+    isGoogleAuth: {
+
+        type: Boolean,
+        default: false
+    },
+
+    isEmail: {
+
+        type: Boolean,
+        default: false
+    },
+
 
 })
 

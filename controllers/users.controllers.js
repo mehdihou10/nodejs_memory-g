@@ -10,6 +10,8 @@ const generateToken = require('../utils/generate.token');
 
 const createError = require('../utils/create.error');
 
+const {validationResult} = require('express-validator');
+
 
 const getUsers = asyncWrapper(async (req,res)=>{
 
@@ -19,15 +21,38 @@ const getUsers = asyncWrapper(async (req,res)=>{
 
 })
 
+const getUserById = asyncWrapper(async (req,res,next)=>{
+
+    const {userId} = req.params;
+
+    const user = await User.findById(userId,{password: false});
+
+    if(!user){
+
+        const error = createError(httpStatus.FAIL,404,'user not found')
+        return next(error);
+    }
+
+    res.json({status: httpStatus.SUCCESS,user})
+})
+
 
 const register = asyncWrapper(async (req,res,next)=>{
+
+    const errors = validationResult(req);
+
+    if(!errors.isEmpty()){
+
+        const error = createError(httpStatus.FAIL,400,errors.array())
+        return next(error);
+    }
 
 
     const user = await User.findOne({email: req.body.email});
 
     if(user){
 
-        const error = createError(httpStatus.FAIL,400,"user already signed");
+        const error = createError(httpStatus.FAIL,400,"user already registered");
         return next(error);
 
     }
@@ -53,6 +78,14 @@ const register = asyncWrapper(async (req,res,next)=>{
 
 const login = asyncWrapper(async (req,res,next)=>{
 
+    const errors = validationResult(req);
+
+    if(!errors.isEmpty()){
+
+        const error = createError(httpStatus.FAIL,400,errors.array())
+        return next(error);
+    }
+
     const requestBody = req.body;
 
     const user = await User.findOne({email: requestBody.email});
@@ -65,11 +98,17 @@ const login = asyncWrapper(async (req,res,next)=>{
 
     const token = generateToken({email: user.email, username: user.userName, image: user.image});
 
-    if(!requestBody.password){
+    if(!user.password){
 
-        return res.json({status: httpStatus.SUCCESS,token});
+        const error = createError(httpStatus.FAIL,400,"you must sign in the box");
+        return next(error)
+    }
 
-    } else{
+    if(requestBody.password.trim() === ""){
+
+        const error = createError(httpStatus.FAIL,400,"you must add your password");
+        return next(error);
+    }
 
         const isPasswordTrue = await bcrypt.compare(requestBody.password, user.password);
 
@@ -80,13 +119,34 @@ const login = asyncWrapper(async (req,res,next)=>{
         }
 
         return res.json({status: httpStatus.SUCCESS,token});
+    
+
+})
+
+const loginAuth = asyncWrapper(async(req,res,next)=>{
+
+    const {email} = req.body;
+
+    const user = await User.findOne({email: email})
+
+    if(!user){
+
+        const error = createError(httpStatus.FAIL,400,"user not found");
+        return next(error);
     }
+
+    const token = generateToken({email: user.email, username: user.userName, image: user.image})
+
+    res.json({status: httpStatus.SUCCESS, token})
+
 
 })
 
 module.exports = {
 
     getUsers,
+    getUserById,
     register,
-    login
+    login,
+    loginAuth
 }
